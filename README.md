@@ -80,6 +80,3 @@ You can easily customize the script behavior in the `config.lua` file:
 6. Press **[Backspace]** to exit the camera.
 
 ---
-
-### 📝 Note
-To customize the logo or lower-third design, simply replace the image files in the `ui/` folder with your own designs while maintaining the same file names.
