@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'pahreey'
 description 'Pro News Camera with Satellite Signal System'
-version '1.1.0'
+version '1.2.0'
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -25,7 +25,5 @@ ui_page 'ui/index.html'
 files {
     'ui/index.html',
     'ui/style.css',
-    'ui/script.js',
-    'ui/news_lower_third_base.png',
-    'ui/corner_logo.png'
+    'ui/script.js'
 }

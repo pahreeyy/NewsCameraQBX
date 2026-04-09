@@ -1,7 +1,8 @@
 -- ==========================================================================================
 -- IME NEWS CAMERA
 -- Developed by: pahreeyy#2747 (Motion Line Media)
--- Features: Dynamic Signal, Transmitter System, Multi-UI Toggle, Custom NUI.
+-- Features: Dynamic Signal, Transmitter System, Multi-UI Toggle, Web-based Overlay.
+-- Version: 1.2.0
 -- ==========================================================================================
 
 local QBX = exports.qbx_core
@@ -117,16 +118,18 @@ end)
 -- ==========================================
 -- UI & CAMERA LOGIC
 -- ==========================================
-function StartNewsCamera(header, title, summary)
+function StartNewsCamera()
     CreateThread(function()
         local ped = PlayerPedId()
-        local uiMode = 1 -- 1: News, 2: Letterbox, 3: Clear
+        local uiMode = 1 -- 1: Web UI, 2: Letterbox, 3: Clear
         
         local model = `prop_v_cam_01`
         RequestModel(model)
         while not HasModelLoaded(model) do Wait(100) end
         cameraProp = CreateObject(model, 0.0, 0.0, 0.0, true, true, false)
         
+        -- Matikan collision kamera agar player tidak tersendat
+        SetEntityCollision(cameraProp, false, false)
         AttachEntityToEntity(cameraProp, ped, GetPedBoneIndex(ped, 28422), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, true, true, false, true, 1, true)
         
         RequestAnimDict("missfinale_c2mcs_1")
@@ -138,29 +141,23 @@ function StartNewsCamera(header, title, summary)
         SetCamRot(cam, 0.0, 0.0, GetEntityHeading(ped), 2)
         RenderScriptCams(true, false, 0, true, false)
 
-        -- Menyalakan NUI pertama kali
-        SendNUIMessage({
-            action = "SHOW_UI",
-            header = header,
-            title = title,
-            summary = summary
-        })
+        -- Tampilkan Iframe Website
+        SendNUIMessage({ action = "SHOW_UI" })
 
         usingCamera = true
-        local isUiVisible = true -- Untuk melacak apakah NUI sedang tampil
+        local isUiVisible = true 
 
         while usingCamera do
             Wait(0)
             local source, dist = GetBestSignalSource()
 
-            if IsControlJustPressed(0, 47) then -- Tekan G
+            if IsControlJustPressed(0, 47) then -- Tombol G untuk Toggle UI
                 uiMode = uiMode + 1
                 if uiMode > 3 then uiMode = 1 end
                 PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET", 1)
 
-                -- Toggle Custom UI NUI
                 if uiMode == 1 and not isUiVisible then
-                    SendNUIMessage({ action = "SHOW_UI", header = header, title = title, summary = summary })
+                    SendNUIMessage({ action = "SHOW_UI" })
                     isUiVisible = true
                 elseif uiMode ~= 1 and isUiVisible then
                     SendNUIMessage({ action = "HIDE_UI" })
@@ -195,7 +192,7 @@ function StartNewsCamera(header, title, summary)
                 end
             end
 
-            -- Hanya render Letterbox kalau mode 2
+            -- Mode Cinematic
             if uiMode == 2 then
                 DrawLetterbox()
             end
@@ -230,7 +227,7 @@ function StartNewsCamera(header, title, summary)
             HideHudAndRadarThisFrame()
         end
 
-        -- Matikan NUI dan hapus kamera saat selesai
+        -- Matikan NUI dan hapus kamera
         SendNUIMessage({ action = "HIDE_UI" })
         RenderScriptCams(false, false, 0, true, false)
         DestroyCam(cam, false)
@@ -251,14 +248,9 @@ RegisterNetEvent('newscamera:client:use', function()
         if not usingCamera then
             local source = GetBestSignalSource()
             if source then
-                local input = lib.inputDialog('News Camera Config', {
-                    {type = 'input', label = 'Box Atas (Kuning)', default = 'BREAKING NEWS', required = true},
-                    {type = 'input', label = 'Box Tengah (Merah)', default = 'LIVE REPORT', required = true},
-                    {type = 'input', label = 'Box Bawah (Abu-abu)', default = 'Terjadi kehebohan di Los Santos', required = true},
-                })
-                if input then StartNewsCamera(input[1], input[2], input[3]) end
+                StartNewsCamera()
             else
-                exports.qbx_core:Notify("Butuh Signal Satelit Untuk Menyalakan Kamera!", "error")
+                exports.qbx_core:Notify("Butuh Link Satelit!", "error")
             end
         else
             usingCamera = false
