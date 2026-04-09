@@ -1,7 +1,7 @@
 -- ==========================================================================================
 -- IME NEWS CAMERA
 -- Developed by: pahreeyy#2747 (Motion Line Media)
--- Features: Dynamic Signal, Transmitter System, Multi-UI Toggle.
+-- Features: Dynamic Signal, Transmitter System, Multi-UI Toggle, Custom NUI.
 -- ==========================================================================================
 
 local QBX = exports.qbx_core
@@ -16,7 +16,7 @@ local current_fov, target_fov = 37.5, 37.5
 local zoomSpeed, speed_lr, speed_ud = 2.0, 3.0, 3.0
 
 -- ==========================================
--- NEW FEATURE: UI HELPERS
+-- FEATURE: UI HELPERS
 -- ==========================================
 local function DrawLetterbox()
     -- Bar Atas
@@ -40,12 +40,13 @@ local function GetBestSignalSource()
     local pos = GetEntityCoords(ped)
     local source, minDist = nil, 999.0
 
-    -- Kita panggil Config langsung di sini agar tidak nil
-    for _, model in ipairs(Config.NewsVehicles) do
-        local veh = GetClosestVehicle(pos.x, pos.y, pos.z, Config.MaxDistance, model, 70)
-        if DoesEntityExist(veh) then
-            local dist = #(pos - GetEntityCoords(veh))
-            if dist < minDist then minDist = dist; source = veh end
+    if Config and Config.NewsVehicles then
+        for _, model in ipairs(Config.NewsVehicles) do
+            local veh = GetClosestVehicle(pos.x, pos.y, pos.z, Config.MaxDistance, model, 70)
+            if DoesEntityExist(veh) then
+                local dist = #(pos - GetEntityCoords(veh))
+                if dist < minDist then minDist = dist; source = veh end
+            end
         end
     end
 
@@ -116,18 +117,6 @@ end)
 -- ==========================================
 -- UI & CAMERA LOGIC
 -- ==========================================
-local function SetupScaleform(header, title, summary)
-    local handle = RequestScaleformMovie("BREAKING_NEWS")
-    while not HasScaleformMovieLoaded(handle) do Wait(0) end
-    
-    PushScaleformMovieFunction(handle, "SET_TEXT")
-    PushScaleformMovieFunctionParameterString(header) 
-    PushScaleformMovieFunctionParameterString(title)
-    PopScaleformMovieFunctionVoid()
-    
-    return handle
-end
-
 function StartNewsCamera(header, title, summary)
     CreateThread(function()
         local ped = PlayerPedId()
@@ -149,17 +138,34 @@ function StartNewsCamera(header, title, summary)
         SetCamRot(cam, 0.0, 0.0, GetEntityHeading(ped), 2)
         RenderScriptCams(true, false, 0, true, false)
 
-        local ui = SetupScaleform(header, title, summary)
+        -- Menyalakan NUI pertama kali
+        SendNUIMessage({
+            action = "SHOW_UI",
+            header = header,
+            title = title,
+            summary = summary
+        })
+
         usingCamera = true
+        local isUiVisible = true -- Untuk melacak apakah NUI sedang tampil
 
         while usingCamera do
             Wait(0)
             local source, dist = GetBestSignalSource()
 
-            if IsControlJustPressed(0, 47) then
+            if IsControlJustPressed(0, 47) then -- Tekan G
                 uiMode = uiMode + 1
                 if uiMode > 3 then uiMode = 1 end
                 PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET", 1)
+
+                -- Toggle Custom UI NUI
+                if uiMode == 1 and not isUiVisible then
+                    SendNUIMessage({ action = "SHOW_UI", header = header, title = title, summary = summary })
+                    isUiVisible = true
+                elseif uiMode ~= 1 and isUiVisible then
+                    SendNUIMessage({ action = "HIDE_UI" })
+                    isUiVisible = false
+                end
             end
 
             if not source or dist > Config.MaxDistance then
@@ -189,9 +195,8 @@ function StartNewsCamera(header, title, summary)
                 end
             end
 
-            if uiMode == 1 then
-                DrawScaleformMovieFullscreen(ui, 255, 255, 255, 255, 0)
-            elseif uiMode == 2 then
+            -- Hanya render Letterbox kalau mode 2
+            if uiMode == 2 then
                 DrawLetterbox()
             end
             
@@ -225,17 +230,17 @@ function StartNewsCamera(header, title, summary)
             HideHudAndRadarThisFrame()
         end
 
+        -- Matikan NUI dan hapus kamera saat selesai
+        SendNUIMessage({ action = "HIDE_UI" })
         RenderScriptCams(false, false, 0, true, false)
         DestroyCam(cam, false)
         DeleteObject(cameraProp)
         ClearPedTasks(ped)
-        SetScaleformMovieAsNoLongerNeeded(ui)
     end)
 end
 
 -- TRIGGER CAMERA
 RegisterNetEvent('newscamera:client:use', function()
-    -- PENGAMAN: Jika Config belum ter-load, paksa ambil ulang
     if not Config then 
         print("^1[ERROR] Config tidak ditemukan! Pastikan shared_script 'config.lua' ada di manifest.^7")
         return 
@@ -247,17 +252,18 @@ RegisterNetEvent('newscamera:client:use', function()
             local source = GetBestSignalSource()
             if source then
                 local input = lib.inputDialog('News Camera Config', {
-                    {type = 'input', label = 'Box Tengah (Merah)', default = 'LOS SANTOS', required = true},
-                    {type = 'input', label = 'Box Bawah (Hitam)', default = 'LIVE REPORT', required = true},
+                    {type = 'input', label = 'Box Atas (Kuning)', default = 'BREAKING NEWS', required = true},
+                    {type = 'input', label = 'Box Tengah (Merah)', default = 'LIVE REPORT', required = true},
+                    {type = 'input', label = 'Box Bawah (Abu-abu)', default = 'Terjadi kehebohan di Los Santos', required = true},
                 })
                 if input then StartNewsCamera(input[1], input[2], input[3]) end
             else
-                exports.qbx_core:Notify("Butuh Link Satelit!", "error")
+                exports.qbx_core:Notify("Butuh Signal Satelit Untuk Menyalakan Kamera!", "error")
             end
         else
             usingCamera = false
         end
     else
-        exports.qbx_core:Notify("Hanya " .. Config.JobName .. "!", "error")
+        exports.qbx_core:Notify("Hanya " .. Config.JobName .. " yang bisa menggunakan ini!", "error")
     end
 end)

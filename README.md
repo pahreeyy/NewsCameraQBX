@@ -1,39 +1,56 @@
-# 🎥 IME News Camera (v1.0.0)
+# 🎥 IME News Camera (v1.1.0)
 **Professional News Camera System for FiveM (QBX Core)**
 
-A high-quality reporter camera feature equipped with a satellite signal system. Developed by **Motion Line Media** to enhance the news-reporting roleplay experience on server.
+A high-quality reporter camera feature equipped with a satellite signal system and a **fully custom NUI Overlay**. Developed by **Motion Line Media** to enhance the news-reporting roleplay experience on your server.
 
 ---
 
 ## 🏆 Credits
 - **Original Feature by:** Motion Line Media
-- **Developed by:** [pahreeyy#2747](https://github.com/pahreeyy)
+- **Developed by:** [pahreeyy#2747](https://github.com/pahreeyy) | Version 1.1.0
 - **Framework:** QBX Core
 
 ---
 
 ## ✨ Features
+- **🎨 Custom NUI Overlay:** No longer using GTA's Scaleform! High-quality, custom-designed media graphics for a unique server identity.
+- **✍️ 3-Line Dynamic Input:** Reporters can now input **Category**, **Headline**, and **Sub-headline** directly via a dialog menu before going live.
 - **🛰️ Satellite Signal System:** Dynamic signal indicator with audible beeps and a blinking HUD based on the distance to media vehicles or transmitters.
 - **📡 Transmitter System:** Deploy a portable satellite jammer/transmitter in the field to boost signal range in remote areas.
-- **🎒 Inventory Integration:** Automatically removes the item when the transmitter is deployed and returns it when picked up.
-- **📺 Dynamic UI (G Toggle):** Instant UI switching: Weazel News Overlay, Cinematic Letterbox, or Clear UI.
+- **📺 Multi-UI Toggle (G Key):** Switch instantly between:
+  1. **Custom Media Overlay** (Your own brand)
+  2. **Cinematic Letterbox** (Movie style)
+  3. **Clear HUD** (No UI)
 - **💼 Job Restricted:** Fully integrated with the QBX job system (Reporter job).
 
 ---
 
 ## ⚙️ Configuration
-You can easily customize the script behavior in the `config.lua` file without touching the core logic:
-
+You can easily customize the script behavior in the `config.lua` file:
 - **Signal Range:** Adjust `MaxDistance` and `WarningDistance` for satellite reception.
-- **Media Vehicles:** Define which vehicle models provide a satellite signal (default: `rumpo`).
-- **Job Settings:** Change the required job name (default: `reporter`) to match your server's database.
+- **Media Vehicles:** Define which vehicle models provide a satellite signal.
+- **Job Settings:** Change the required job name (default: `reporter`).
+- **NUI Customization:** Edit `ui/style.css` to reposition text or swap out the `news_overlay.png`.
 
 ---
 
 ## 🛠 Installation
 1. Download the `ime_newscam` folder.
 2. Place it into your server's `resources` folder.
-3. Register the following items in `ox_inventory/data/items.lua`:
+3. Ensure your file structure includes the `ui` folder with all assets:
+   ```text
+   /ime_newscam
+   ├── client.lua
+   ├── server.lua
+   ├── config.lua
+   ├── fxmanifest.lua
+   └── /ui
+       ├── index.html
+       ├── style.css
+       ├── script.js
+       └── news_overlay.png
+   ```
+4. Register the items in `ox_inventory/data/items.lua`:
    ```lua
    ['newscamera'] = {
        label = 'News Camera',
@@ -49,3 +66,20 @@ You can easily customize the script behavior in the `config.lua` file without to
        close = true,
        description = 'A portable satellite signal transmitter.',
    },
+   ```
+5. Add `ensure ime_newscam` to your `server.cfg`.
+
+---
+
+## 🎮 How to Use
+1. Equip the **News Camera** item.
+2. If the signal is weak, deploy a **News Transmitter** for good signal.
+3. Use the camera item to open the **Config Dialog**.
+4. Fill in the **Category**, **Main Headline**, and **Summary Text**.
+5. Press **[G]** to cycle through UI modes and **[Mouse Wheel]** to zoom.
+6. Press **[Backspace]** to exit the camera.
+
+---
+
+### 📝 Note
+To customize the logo or lower-third design, simply replace the image files in the `ui/` folder with your own designs while maintaining the same file names.

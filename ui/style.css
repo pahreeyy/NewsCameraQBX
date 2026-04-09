@@ -1,0 +1,82 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: transparent;
+    user-select: none;
+}
+
+#news-container {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+}
+
+/* --- LOGO POJOK KANAN ATAS --- */
+.corner-logo {
+    position: absolute;
+    top: 3vh;
+    right: 3vw;
+}
+
+.corner-logo img {
+    height: 20vh; 
+    width: auto;
+}
+
+/* --- BUNGKUSAN LOWER THIRD (BARIS BAWAH) --- */
+.lower-third-wrapper {
+    position: absolute;
+    bottom: 8vh; /* Jarak dari bawah layar */
+    left: 51%; /* Membawa ke tengah layar */
+    transform: translateX(-50%); /* Kunci agar benar-benar persis di center */
+    width: 101vw; /* Ukuran Image */
+    height: auto;
+}
+
+.lower-third-bg {
+    width: 100%;
+    display: block;
+}
+
+/* ==========================================================
+   POSISI TEKS
+   Karena teks ada di dalam wrapper, teks akan otomatis
+   ikut ke tengah. tinggal sesuaikan top/left jika perlu.
+   ========================================================== */
+
+.header-text {
+    position: absolute;
+    top: 10%; 
+    left: 17%; 
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-weight: bold;
+    font-style: italic;
+    font-size: 1.5vw;
+    color: black;
+}
+
+.title-text {
+    position: absolute;
+    top: 35%; 
+    left: 17%;
+    font-family: 'Arial Black', Arial, sans-serif;
+    font-weight: bold;
+    font-size: 2.5vw;
+    color: white;
+    width: 60%; /* <--- Persempit lebar kontainer agar teks dipaksa turun baris */
+    word-wrap: break-word; /* <--- Paksa teks untuk turun ke baris baru sebelum menabrak batas */
+    overflow: hidden; /* <--- Menyembunyikan teks yang berlebihan jika masih ada */
+    line-height: 1.2;
+}
+
+.summary-text {
+    position: absolute;
+    top: 80%; 
+    left: 17%;
+    font-family: Arial, sans-serif;
+    font-size: 1.1vw;
+    color: black;
+    width: 80%; 
+}
